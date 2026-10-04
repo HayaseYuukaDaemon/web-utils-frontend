@@ -10,7 +10,7 @@ const authToken = ref('')
 authToken.value = getAuthToken()
 
 function saveAuthToken() {
-    document.cookie = `auth_token=${authToken.value}`
+    localStorage.setItem('auth_token', authToken.value)
     message.info(`Saved: ${authToken.value}`)
     setTimeout(() => { window.location.reload() }, 1000);
 }

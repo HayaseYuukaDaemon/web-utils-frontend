@@ -17,7 +17,21 @@ export function getCookie(name: string) {
 }
 
 export function getAuthToken(){
-    return getCookie('auth_token')
+    return localStorage.getItem('auth_token') || ''
+}
+
+export const SERVER_BASE_URL = "http://localhost:8000"
+
+export async function authFetch(
+    input: RequestInfo | URL,
+    init: RequestInit = {},
+) {
+    const authToken = getAuthToken()
+    const headers = new Headers(init.headers)
+    if (authToken) {
+        headers.set('Authorization', `Bearer ${authToken}`)
+    }
+    return await fetch(input, { ...init, headers })
 }
 
 const app = createApp(App)

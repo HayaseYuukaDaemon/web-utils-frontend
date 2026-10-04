@@ -6,19 +6,17 @@ const DEFAULT_LENGTH = 16
 
 export const DEFAULT_SYMBOLS = '!@#%_-+'
 
-export interface GeneratePasswordOptions {
-  masterKey: string
+export interface PasswordConfig {
   platform: string
   length?: number
   symbols?: string
 }
 
-export async function generatePassword({
-  masterKey,
+export async function generatePassword(masterKey: string, {
   platform,
   length = DEFAULT_LENGTH,
   symbols = DEFAULT_SYMBOLS,
-}: GeneratePasswordOptions): Promise<string> {
+}: PasswordConfig): Promise<string> {
   if (!masterKey || !platform || length <= 0) {
     return ''
   }
