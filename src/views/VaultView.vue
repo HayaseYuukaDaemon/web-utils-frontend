@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { SERVER_BASE_URL, authFetch } from '../main'
+import { authFetch } from '../main'
 import { NCard, NAutoComplete, NSwitch, NButton, NInput, NFlex, useMessage, NAlert, NInputNumber, NPopconfirm } from 'naive-ui';
 import { computed, ref } from 'vue'
-import {generatePassword, DEFAULT_SYMBOLS} from '../components/vault'
+import { generatePassword, DEFAULT_SYMBOLS } from '../components/vault'
 
 import type { PasswordConfig } from '../components/vault'
 
@@ -53,7 +53,7 @@ function onConfigSelect(name: string) {
 const message = useMessage();
 
 async function updateConfigs() {
-    authFetch(`${SERVER_BASE_URL}/vault/configs`, {
+    authFetch(`/api/vault/configs`, {
         method: 'GET',
     }).then(async (response) => {
         if (!response.ok) {
@@ -81,7 +81,7 @@ async function handleGenerate() {
         message.error('主密钥和平台不能为空')
         return
     }
-    if (!window.isSecureContext){
+    if (!window.isSecureContext) {
         message.error('浏览器不支持剪贴板操作，请使用https或localhost访问')
         return
     }
@@ -102,13 +102,12 @@ const enableServerSideFunctions = ref(false);
 async function saveConfig() {
     submitLoading.value = true
     try {
-        const resp = await authFetch(`${SERVER_BASE_URL}/vault/configs`, {
+        const resp = await authFetch(`/api/vault/configs/${encodeURIComponent(configName.value)}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                name: configName.value,
                 platform: platform.value,
                 length: length.value,
                 symbols: symbols.value
@@ -127,7 +126,7 @@ async function saveConfig() {
 async function deleteConfig() {
     deleteLoading.value = true;
     try {
-        const resp = await authFetch(`${SERVER_BASE_URL}/vault/configs/${encodeURIComponent(configName.value)}`, {
+        const resp = await authFetch(`/api/vault/configs/${encodeURIComponent(configName.value)}`, {
             method: 'DELETE'
         })
         if (!resp.ok) {
@@ -152,22 +151,26 @@ updateConfigs().then()
             <n-alert type="error" v-if="!enableServerSideFunctions">服务器端请求失败, 禁用相关功能</n-alert>
             <n-input v-model:value="masterKey" placeholder="主密钥" clearable />
             <n-input v-model:value="platform" placeholder="平台" clearable />
-            <n-input-number v-model:value="length" placeholder="长度" :min="4"/>
+            <n-input-number v-model:value="length" placeholder="长度" :min="4" />
             <n-flex align="center" :size="16" :wrap="false">
                 <n-switch v-model:value="enableSpecialCharacters" />
-                <n-input v-model:value="specialCharacters" class="field" placeholder="特殊字符集" :disabled="!enableSpecialCharacters" />
+                <n-input v-model:value="specialCharacters" class="field" placeholder="特殊字符集"
+                    :disabled="!enableSpecialCharacters" />
             </n-flex>
 
             <n-flex align="center" :wrap="false">
-                <n-auto-complete v-model:value="configName" placeholder="配置" class="field" :disabled="!enableServerSideFunctions" :options="configOptions" @select="onConfigSelect"/>
-                <n-button type="success" @click="saveConfig" :loading="submitLoading" :disabled="!enableServerSideFunctions || !configName">保存</n-button>
+                <n-auto-complete v-model:value="configName" placeholder="配置" class="field"
+                    :disabled="!enableServerSideFunctions" :options="configOptions" @select="onConfigSelect" />
+                <n-button type="success" @click="saveConfig" :loading="submitLoading"
+                    :disabled="!enableServerSideFunctions || !configName">保存</n-button>
                 <n-popconfirm @positive-click="deleteConfig">
                     <template #trigger>
-                        <n-button type="error" :loading="deleteLoading" :disabled="!enableServerSideFunctions || !configName">删除</n-button>
+                        <n-button type="error" :loading="deleteLoading"
+                            :disabled="!enableServerSideFunctions || !configName">删除</n-button>
                     </template>
                     确定要删除 {{ configName }} 吗?
                 </n-popconfirm>
-                
+
             </n-flex>
             <n-button type="primary" @click="handleGenerate">{{ genetatedPassword }}</n-button>
         </n-flex>

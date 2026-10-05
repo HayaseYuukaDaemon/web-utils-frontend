@@ -20,8 +20,6 @@ export function getAuthToken(){
     return localStorage.getItem('auth_token') || ''
 }
 
-export const SERVER_BASE_URL = "http://localhost:8000"
-
 export async function authFetch(
     input: RequestInfo | URL,
     init: RequestInit = {},
