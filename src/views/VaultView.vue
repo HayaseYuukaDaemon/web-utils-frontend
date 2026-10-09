@@ -149,7 +149,7 @@ updateConfigs().then()
     <n-card title="vault" size="large">
         <n-flex vertical>
             <n-alert type="error" v-if="!enableServerSideFunctions">服务器端请求失败, 禁用相关功能</n-alert>
-            <n-input v-model:value="masterKey" placeholder="主密钥" clearable />
+            <n-input type="password" show-password-on="click" v-model:value="masterKey" placeholder="主密钥" clearable />
             <n-input v-model:value="platform" placeholder="平台" clearable />
             <n-input-number v-model:value="length" placeholder="长度" :min="4" />
             <n-flex align="center" :size="16" :wrap="false">
