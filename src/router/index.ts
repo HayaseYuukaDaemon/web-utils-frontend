@@ -11,6 +11,10 @@ const router = createRouter({
       name: 'auth',
       component: () => import('../views/AuthView.vue')
     },{
+      path: '/picvote',
+      name: 'picvote',
+      component: () => import('../views/PicVoteView.vue')
+    },{
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('../views/NotFoundView.vue')

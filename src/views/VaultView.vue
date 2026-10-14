@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { authFetch } from '../main'
-import { NCard, NAutoComplete, NSwitch, NButton, NInput, NFlex, useMessage, NAlert, NInputNumber, NPopconfirm } from 'naive-ui';
-import { computed, ref } from 'vue'
+import { NCard, NAutoComplete, NSwitch, NButton, NInput, NFlex, NTag, useMessage, NAlert, NInputNumber, NPopconfirm } from 'naive-ui';
+import { computed, ref, watch } from 'vue'
 import { generatePassword, DEFAULT_SYMBOLS } from '../components/vault'
 
 import type { PasswordConfig } from '../components/vault'
@@ -10,6 +10,42 @@ const enableSpecialCharacters = ref(true)
 const genetatedPassword = ref('点击生成密码');
 
 const masterKey = ref('');
+const masterKeyFingerprint = ref<{
+    code: string
+    color: { color: string; textColor: string }
+} | null>(null)
+
+watch(masterKey, async (value, _oldValue, onCleanup) => {
+    let active = true
+    onCleanup(() => { active = false })
+    masterKeyFingerprint.value = null
+
+    if (!value || !globalThis.crypto?.subtle) return
+
+    try {
+        const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
+        if (!active) return
+
+        const hash = new Uint8Array(hashBuffer)
+        const r = hash[0]!
+        const g = hash[1]!
+        const b = hash[2]!
+        const code = Array.from(hash.slice(0, 2), byte => byte.toString(16).padStart(2, '0'))
+            .join('').toUpperCase()
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000
+
+        masterKeyFingerprint.value = {
+            code,
+            color: {
+                color: `rgb(${r},${g},${b})`,
+                textColor: brightness > 128 ? '#000' : '#fff'
+            }
+        }
+    } catch {
+        // Keep the badge hidden if Web Crypto cannot calculate the fingerprint.
+    }
+}, { flush: 'sync' })
+
 const platform = ref('');
 const configName = ref('');
 const specialCharacters = ref(DEFAULT_SYMBOLS);
@@ -149,7 +185,15 @@ updateConfigs().then()
     <n-card title="vault" size="large">
         <n-flex vertical>
             <n-alert type="error" v-if="!enableServerSideFunctions">服务器端请求失败, 禁用相关功能</n-alert>
-            <n-input type="password" show-password-on="click" v-model:value="masterKey" placeholder="主密钥" clearable />
+            <n-flex align="center" :wrap="false" :size="8">
+                <n-input type="password" show-password-on="click" v-model:value="masterKey" placeholder="主密钥"
+                    clearable class="master-key-input" />
+                <n-tag size="small" :bordered="false" :color="masterKeyFingerprint?.color"
+                    class="master-key-fingerprint" :class="{ 'is-hidden': !masterKeyFingerprint }"
+                    :aria-hidden="!masterKeyFingerprint" aria-label="主密钥指纹">
+                    {{ masterKeyFingerprint?.code ?? '????' }}
+                </n-tag>
+            </n-flex>
             <n-input v-model:value="platform" placeholder="平台" clearable />
             <n-input-number v-model:value="length" placeholder="长度" :min="4" />
             <n-flex align="center" :size="16" :wrap="false">
@@ -177,4 +221,21 @@ updateConfigs().then()
     </n-card>
 </template>
 
-<style scoped></style>
+<style scoped>
+.master-key-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.master-key-fingerprint {
+    box-sizing: border-box;
+    width: 64px;
+    flex-shrink: 0;
+    justify-content: center;
+    font-family: monospace;
+}
+
+.master-key-fingerprint.is-hidden {
+    visibility: hidden;
+}
+</style>
