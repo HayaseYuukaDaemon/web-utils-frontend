@@ -1,0 +1,22 @@
+services:
+  build:
+    image: ${NODE_IMAGE:-node:23}
+    working_dir: /app
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+    volumes:
+      - .:/app
+    command:
+      - sh
+      - -ec
+      - |
+        stamp=node_modules/.compose-deps
+        fingerprint=$$(sha256sum package.json package-lock.json)
+        runtime=$$(node -p '[process.version, process.platform, process.arch].join(" ")')
+        fingerprint="$$fingerprint
+        $$runtime"
+        if [ ! -x node_modules/.bin/vite ] || [ ! -f "$$stamp" ] || [ "$$(cat "$$stamp")" != "$$fingerprint" ]; then
+          npm ci
+          printf '%s\n' "$$fingerprint" > "$$stamp"
+        fi
+        npm run build

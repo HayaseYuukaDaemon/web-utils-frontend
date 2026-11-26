@@ -89,7 +89,7 @@ function onConfigSelect(name: string) {
 const message = useMessage();
 
 async function updateConfigs() {
-    authFetch(`/api/vault/configs`, {
+    authFetch(`/vault/configs`, {
         method: 'GET',
     }).then(async (response) => {
         if (!response.ok) {
@@ -138,7 +138,7 @@ const enableServerSideFunctions = ref(false);
 async function saveConfig() {
     submitLoading.value = true
     try {
-        const resp = await authFetch(`/api/vault/configs/${encodeURIComponent(configName.value)}`, {
+        const resp = await authFetch(`/vault/configs/${encodeURIComponent(configName.value)}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -162,7 +162,7 @@ async function saveConfig() {
 async function deleteConfig() {
     deleteLoading.value = true;
     try {
-        const resp = await authFetch(`/api/vault/configs/${encodeURIComponent(configName.value)}`, {
+        const resp = await authFetch(`/vault/configs/${encodeURIComponent(configName.value)}`, {
             method: 'DELETE'
         })
         if (!resp.ok) {
@@ -186,8 +186,8 @@ updateConfigs().then()
         <n-flex vertical>
             <n-alert type="error" v-if="!enableServerSideFunctions">服务器端请求失败, 禁用相关功能</n-alert>
             <n-flex align="center" :wrap="false" :size="8">
-                <n-input type="password" show-password-on="click" v-model:value="masterKey" placeholder="主密钥"
-                    clearable class="master-key-input" />
+                <n-input type="password" show-password-on="click" v-model:value="masterKey" placeholder="主密钥" clearable
+                    class="master-key-input" />
                 <n-tag size="small" :bordered="false" :color="masterKeyFingerprint?.color"
                     class="master-key-fingerprint" :class="{ 'is-hidden': !masterKeyFingerprint }"
                     :aria-hidden="!masterKeyFingerprint" aria-label="主密钥指纹">

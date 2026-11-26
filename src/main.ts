@@ -21,7 +21,7 @@ export function getAuthToken(){
 }
 
 export async function authFetch(
-    input: RequestInfo | URL,
+    path: string,
     init: RequestInit = {},
 ) {
     const authToken = getAuthToken()
@@ -29,7 +29,8 @@ export async function authFetch(
     if (authToken) {
         headers.set('Authorization', `Bearer ${authToken}`)
     }
-    return await fetch(input, { ...init, headers })
+    const apiBase = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '')
+    return await fetch(`${apiBase}${path}`, { ...init, headers })
 }
 
 const app = createApp(App)
